@@ -1,6 +1,6 @@
 import socket
 import socketserver
-host = "localhost"
+host = "0.0.0.0"
 ip = 9999
 server = socket.socket()
 server.bind((host,ip))
