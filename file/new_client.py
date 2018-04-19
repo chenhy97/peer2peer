@@ -30,11 +30,10 @@ while True:
                 else:
                     data = client.recv(file_size - received_size)
                     received_size = file_size
+                    print(data)
                 fp.write(data)
             fp.close()
             print("OK")
-        else:
-            print(file_buf)
         break;
 
     anwser = str(client.recv(1024),"ascii")
