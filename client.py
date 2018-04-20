@@ -4,7 +4,7 @@ import os
 
 #host = "172.19.101.14"#服务器ip
 host = "localhost"
-port = 9999
+port = 12001
 
 client = socket.socket()
 client.connect((host,port))

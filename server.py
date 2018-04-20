@@ -8,7 +8,7 @@ import threading
 
 
 port = 9999
-host = "0.0.0.0"
+host = "localhost"
 server = socket.socket()
 server.bind((host,port))
 server.listen(10)#监听是否有客户端
