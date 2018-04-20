@@ -22,25 +22,40 @@ def fix_address(string):
 def ask_server_forhelp():
     port = 12001
     host = 'localhost'
-    client = socket.socket()
-    client.connect((host,port))
+    while True:
+        client = socket.socket()
+        client.connect((host,port))
+        cmd = input("what do you want?")
+        print(cmd)
+        if cmd == 'trans':
+            file_name = input("What do you need?")
+            packege = calcsize('128s128s')
+            cmdhead = pack('128s128s',cmd.encode('utf-8'),file_name.encode('utf-8'))
+            client.sendall(cmdhead)
+            file_addresses = str(client.recv(1024),'ascii')
 
-    cmd = input("what do you want?")
-    if cmd == 'trans':
-        file_name = input("What do you need?")
-        packege = calcsize('128s128s')
-        cmdhead = pack('128s128s',cmd.encode('utf-8'),file_name.encode('utf-8'))
-        client.sendall(cmdhead)
+            address_list = fix_address(file_addresses)
 
+            address_union = (file_name,address_list)
+            p2p_receive(address_union)
 
+        elif cmd == 'ls':
+            file_name = 'default'
+            packege = calcsize('128s128s')
+            cmdhead = pack('128s128s',cmd.encode('utf-8'),file_name.encode('utf-8'))
+            client.sendall(cmdhead)
+            buf = str(client.recv(1024),"ascii")
+            print(buf)
 
-        file_addresses = str(client.recv(1024),'ascii')
-        print(file_addresses)
-        address_list = fix_address(file_addresses)
         client.close()
-        return (file_name,address_list)
     #else cmd == 'ls':
 def data_upload():
+    port = 12001
+    host = 'localhost'#与服务器建立连接的ip
+    upload_name_to_server = socket.socket()
+    upload_name_to_server.connect((host,port))
+    while True:
+        name = input("what's newfile do you want to upload?")
 
 
 
@@ -54,29 +69,29 @@ def p2p_upload():
     while True:
         for_client, addr = server.accept()  # 有客户端，建立相应套接字
         print("connected", addr)
-
-        while True:
-            filepath = str(for_client.recv(1024), "ascii")
+        filepath = str(for_client.recv(1024), "ascii")
+        print(filepath)
+        # anwser = "I recived your input"
+        if os.path.isfile(filepath):
+            statinfo = os.stat(filepath)
+            size = statinfo.st_size  # basename 返回文件名字，而无路径
+            file_info = calcsize('128sl')
+            filehead = pack('128sl', filepath.encode('utf-8'), size)  # 我们可以使用128sl这样的方法表示128个c
+            # har型和一个long型，或者2i表示两个int整型.
+            for_client.sendall(filehead)
+            print("file size is:", size)
+            fileop = open(filepath, 'rb')
+            while True:
+                data = fileop.read(1024)
+                if not data:
+                    print("finished sending")
+                    break
+                for_client.sendall(data)
+        else:
+            anwser = "no such file,input again"
             print(filepath)
-            # anwser = "I recived your input"
-            if os.path.isfile(filepath):
-                statinfo = os.stat(filepath)
-                size = statinfo.st_size  # basename 返回文件名字，而无路径
-                file_info = calcsize('128sl')
-                filehead = pack('128sl', filepath.encode('utf-8'), size)  # 我们可以使用128sl这样的方法表示128个c
-                # har型和一个long型，或者2i表示两个int整型.
-                for_client.sendall(filehead)
-                print("file size is:", size)
-                fileop = open(filepath, 'rb')
-                while True:
-                    data = fileop.read(1024)
-                    if not data:
-                        print("finished sending")
-                        break
-                    for_client.sendall(data)
-            else:
-                anwser = "no such file,input again"
-                for_client.sendall(bytes(anwser, "ascii"))
+            #for_client.sendall(bytes(anwser, "ascii"))
+        for_client.close()
     server.shutdown()
 def p2p_receive(client_union):
     # host = "172.19.101.14"#服务器ip
@@ -85,7 +100,7 @@ def p2p_receive(client_union):
     client = socket.socket()
     client.connect(client_union[1][0])
     while True:
-        client.sendall(bytes(client_union[0], "ascii"))
+        client.sendall(bytes(client_union[0], "ascii"))  #传文件名
         while True:
             file_info_size = calcsize('128sl')
             file_buf = client.recv(file_info_size)
@@ -109,17 +124,19 @@ def p2p_receive(client_union):
                 fp.close()
                 print("OK")
             else:
-                print(file_buf)
+                print(file_buf)#文件名没有找到的 错误输入，
+
             break
 
-        anwser = str(client.recv(1024), "ascii")
+        client.close()
+        break
+        #anwser = str(client.recv(1024), "ascii")
 
 upload_or_receive = input("you want to upload or receive: ")
 
 if upload_or_receive == 'upload':
-    data_upload()
+   # data_upload()
     p2p_upload()
 else:
     #file_name = input("please input the filename you want to get:")
-    address_union = ask_server_forhelp()
-    p2p_receive(address_union)
+    ask_server_forhelp()
