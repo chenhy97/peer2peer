@@ -1,4 +1,4 @@
-# Comupter Network Project
+# Computer Network Project
 Client & Server \\ Peer To Peer
 -----------
 ## Important Points
@@ -9,7 +9,7 @@ server，socket，struct，os等。可以非常方便的搭建一个服务器。
 -	编译环境：pycharm
 ###	Peer 2 Peer 功能介绍：
 - Client 可以有三个指令选择：GET、Upload、Quit
-	>	Get:将Get报文发完总服务器之后可以获取Get数据源，然后再与		数据源建立连接。
+	>	Get:将Get报文发到总服务器之后可以获取Get数据源，然后再与		数据源建立连接。
 	
 	>	Upload:发送Upload报文，告诉服务器自己想要上传的文件，然后服务器将该文件名以及该客户机的IP、port加入文件项表中。
 	
@@ -37,4 +37,17 @@ server，socket，struct，os等。可以非常方便的搭建一个服务器。
 ###		Peer 2 Peer 协议分析
 -	具体过程在流程说明中已经说明。
 - 	现在我们来分析一下命令报文的格式：
-	>	ds
+  
+	>	client -> server_center:  
+		cmdsize + cmd(quit\upload\get) + port/file_name + 保留参数 + 保留参数
+		
+	>	client -> p2p_serverA:
+		cmdsize + cmd + filename + 拥有所需文件的服务器个数 + 文件标号
+		
+	>	p2p_serverA -> client:
+		client与p2p_server建立连接之后，p2p_serverA发送数据给client
+		
+	>	server_center -> client:
+		发送文件列表
+	
+	
